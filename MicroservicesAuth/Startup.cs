@@ -40,7 +40,7 @@ namespace MicroservicesAuth
               // options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
            //);
 
-            services.AddDbContext<MSAuthContext>(options => options.UseNpgsql(_configuration.GetConnectionString("AuthUserDataDBlocal")));
+            services.AddDbContext<MSAuthContext>(options => options.UseNpgsql(_configuration.GetConnectionString("AuthUserPGDBlocal")));
 
             services.AddDefaultIdentity<CustomUserModel>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<IdentityRole>()
               .AddEntityFrameworkStores<MSAuthContext>();
@@ -149,9 +149,11 @@ namespace MicroservicesAuth
             IWebHostEnvironment env,
             RoleManager<IdentityRole> roleManager,
             UserManager<CustomUserModel> userManager,
-            MSAuthContext mangaCMSContext
+            MSAuthContext authContext
             )
         {
+
+            //authContext.Database.Migrate();
 
             CreateRoles(roleManager, userManager).Wait();
 
