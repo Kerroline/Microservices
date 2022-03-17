@@ -6,16 +6,16 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["MicroservicesAuth/MicroservicesAuth.csproj", "MicroservicesAuth/"]
-RUN dotnet restore "MicroservicesAuth/MicroservicesAuth.csproj"
-COPY . .
-WORKDIR "/src/MicroservicesAuth"
-RUN dotnet build "MicroservicesAuth.csproj" -c Release -o /app/build
+COPY ["MSAuth.csproj", "MsAuth/"]
+RUN dotnet restore "MsAuth/MSAuth.csproj"
+COPY . ./MsAuth/
+WORKDIR "/src/MsAuth"
+RUN dotnet build "MSAuth.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "MicroservicesAuth.csproj" -c Release -o /app/publish
+RUN dotnet publish "MSAuth.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "MicroservicesAuth.dll"]
+ENTRYPOINT ["dotnet", "MSAuth.dll"]
