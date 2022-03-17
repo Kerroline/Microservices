@@ -18,7 +18,7 @@ namespace MSAuth.Services
 
         string GenerateJWSToken(UserWithRoles userRoles);
         Task<RefreshTokenModel> RefreshTokenAsync(string token);
-        bool RevokeToken(string token, string ipAddress);
+        Task<bool> RevokeToken(string token);
     }
     public class JWTService : IJWTService
     {
@@ -53,24 +53,50 @@ namespace MSAuth.Services
 
         public async Task<RefreshTokenModel> RefreshTokenAsync(string token)
         {
-            var currentTokenModel =  GetRefreshTokenAsync(token);
+            var currentTokenModel =  GetRefreshToken(token);
             if(currentTokenModel is not null)
             {
                 if (RefreshTokenIsValid(currentTokenModel))
                 {
                     var newRefreshToken = CreateRefreshTokenModel(currentTokenModel.ByUserId);
+                    await DeleteAllTokensForUserAsync(newRefreshToken.ByUserId);
                     await SaveRefreshTokenAsync(newRefreshToken);
-                    await DeleteRefreshTokenAsync(currentTokenModel);
                     return newRefreshToken;
                 }
             }
             return null;
         }
 
-        public bool RevokeToken(string token, string ipAddress)
+        public async Task<bool> RevokeToken(string token)
         {
+            string userId = string.Empty;
+            var refreshToken = GetRefreshToken(token);
+            if (refreshToken is not null)
+            {
+                // this refresh token
+                if (RefreshTokenIsValid(refreshToken))
+                {
+                    userId = refreshToken.ByUserId;
+                }
+            }
+            else
+            {
+                //this access token
+                var handler = new JwtSecurityTokenHandler();
+                var jwsToken = handler.ReadJwtToken(token);
 
-            throw new NotImplementedException();
+                userId = jwsToken.Claims.Where(t => t.Type == "Id").SingleOrDefault().Value;
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return false;
+            }
+            else
+            {
+                await DeleteAllTokensForUserAsync(userId);
+                return true;
+            }   
         }
 
         private IEnumerable<Claim> GenerateTokenClaims(UserWithRoles userWithRoles)
@@ -142,7 +168,7 @@ namespace MSAuth.Services
             return value > 0;
         }
 
-        private RefreshTokenModel GetRefreshTokenAsync(string token)
+        private RefreshTokenModel GetRefreshToken(string token)
         {
             return _authContext.RefreshTokens.SingleOrDefault(t => t.Token == token);
         }
@@ -150,6 +176,15 @@ namespace MSAuth.Services
         private async Task<bool> DeleteRefreshTokenAsync(RefreshTokenModel token)
         {
             _authContext.RefreshTokens.Remove(token);
+            int value = await _authContext.SaveChangesAsync();
+            return value > 0;
+        }
+
+        private async Task<bool> DeleteAllTokensForUserAsync(string userId) 
+        {
+            var tokenList = _authContext.RefreshTokens.Where(t => t.ByUserId == userId);
+
+            _authContext.RemoveRange(tokenList);
             int value = await _authContext.SaveChangesAsync();
             return value > 0;
         }

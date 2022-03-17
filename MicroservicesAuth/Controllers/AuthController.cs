@@ -35,7 +35,6 @@ namespace MSAuth.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Authenticate([FromBody] AuthRequest model)
         {
-            //var response = _userService.Authenticate(model, ipAddress());
             var verifiedUser = await _authService.VerifyingUserAsync(model.Username, model.Password);
 
             if(verifiedUser is not null)
@@ -57,7 +56,7 @@ namespace MSAuth.Controllers
         public async Task<IActionResult> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
-            if(refreshToken is not null)
+            if (!string.IsNullOrEmpty(refreshToken))
             {
                 var newRefreshToken = await _jwtService.RefreshTokenAsync(refreshToken);
 
@@ -82,22 +81,24 @@ namespace MSAuth.Controllers
             return BadRequest(new { message = "refreshToken not found" });
         }
 
-        //[HttpPost("logout")]
-        //public IActionResult RevokeToken([FromBody] RevokeTokenRequest model)
-        //{
-        //    // accept token from request body or cookie
-        //    var token = model.Token ?? Request.Cookies["refreshToken"];
+        [HttpPost("logout")]
+        public async Task<IActionResult> RevokeToken([FromBody] RevokeTokenRequest model)
+        {
+            // accept token from request body or cookie
+            var token = model.Token ?? Request.Cookies["refreshToken"];
 
-        //    if (string.IsNullOrEmpty(token))
-        //        return BadRequest(new { message = "Token is required" });
+            if (!string.IsNullOrEmpty(token)) 
+            {
+                bool response = await _jwtService.RevokeToken(token);
 
-        //    var response = _userService.RevokeToken(token, ipAddress());
+                if (!response)
+                    return NotFound(new { message = "Token not found" });
 
-        //    if (!response)
-        //        return NotFound(new { message = "Token not found" });
-
-        //    return Ok(new { message = "Token revoked" });
-        //}
+                DeleteTokenCookie();
+                return Ok(new { message = "Token revoked" });
+            }
+            return BadRequest(new { message = "Token is required" }); 
+        }
 
 
         private void SetTokenCookie(string token)
@@ -113,14 +114,5 @@ namespace MSAuth.Controllers
         {
             Response.Cookies.Delete("refreshToken");
         }
-
-        //private string ipAddress()
-        //{
-        //    if (Request.Headers.ContainsKey("X-Forwarded-For"))
-        //        return Request.Headers["X-Forwarded-For"];
-        //    else
-        //        return HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
-        //}
-
     }
 }

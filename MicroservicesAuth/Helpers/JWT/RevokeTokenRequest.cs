@@ -7,6 +7,6 @@ namespace MSAuth.Models
 {
     public class RevokeTokenRequest
     {
-        public string RefreshToken { get; set; }
+        public string Token { get; set; }
     }
 }
