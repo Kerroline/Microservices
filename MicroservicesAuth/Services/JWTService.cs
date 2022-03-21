@@ -44,6 +44,7 @@ namespace MSAuth.Services
 
             return new AuthResponse(jwsToken, refreshToken.Token);
         }
+
         public string GenerateJWSToken(UserWithRoles userRoles)
         {
             var tokenClaims = GenerateTokenClaims(userRoles);
@@ -84,8 +85,15 @@ namespace MSAuth.Services
                 //this access token
                 var handler = new JwtSecurityTokenHandler();
                 var jwsToken = handler.ReadJwtToken(token);
+                
+                var expUnixDate = jwsToken.Claims.Where(t => t.Type == "exp").SingleOrDefault().Value;
 
-                userId = jwsToken.Claims.Where(t => t.Type == "Id").SingleOrDefault().Value;
+                var expDate = UnixTimeToDateTime(long.Parse(expUnixDate));
+
+                if(expDate > DateTime.UtcNow)
+                {
+                    userId = jwsToken.Claims.Where(t => t.Type == "Id").SingleOrDefault().Value;
+                } 
             }
 
             if (string.IsNullOrEmpty(userId))
@@ -187,6 +195,13 @@ namespace MSAuth.Services
             _authContext.RemoveRange(tokenList);
             int value = await _authContext.SaveChangesAsync();
             return value > 0;
+        }
+
+        private DateTime UnixTimeToDateTime(long unixTime)
+        {
+            DateTime dtDateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddSeconds(unixTime);
+            return dtDateTime;
         }
 
     }

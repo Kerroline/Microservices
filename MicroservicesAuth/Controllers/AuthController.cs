@@ -81,6 +81,7 @@ namespace MSAuth.Controllers
             return BadRequest(new { message = "refreshToken not found" });
         }
 
+        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> RevokeToken([FromBody] RevokeTokenRequest model)
         {

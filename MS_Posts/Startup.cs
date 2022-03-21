@@ -39,9 +39,9 @@ namespace MS_Posts
             // options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             //);
 
-            //services.AddDbContext<MSPostContext>(options => options.UseNpgsql(_configuration.GetConnectionString("PostsPGDBlocal")));
+            services.AddDbContext<MSPostContext>(options => options.UseNpgsql(_configuration.GetConnectionString("PostsPGDBlocal")));
             //services.AddDbContext<MSPostContext>(options => options.UseNpgsql(_configuration.GetConnectionString("PostsPGDBdocker")));
-            services.AddDbContext<MSPostContext>(options => options.UseNpgsql(_configuration.GetConnectionString("PostsPGDBcompose")));
+            //services.AddDbContext<MSPostContext>(options => options.UseNpgsql(_configuration.GetConnectionString("PostsPGDBcompose")));
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<IdentityRole>()
               .AddEntityFrameworkStores<MSPostContext>();
