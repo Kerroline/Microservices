@@ -112,10 +112,10 @@ namespace MSAuth.Services
             TokenClaims tokenClaims = new(userWithRoles.User.Id, userWithRoles.User.UserName, userWithRoles.Roles);
             List<Claim> claims = new();
             claims.Add(new Claim("Id", tokenClaims.Id));
-            claims.Add(new Claim("Username", tokenClaims.Username));
+            claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, tokenClaims.Username));   
             foreach (var role in tokenClaims.Roles)
             {
-                claims.Add(new Claim("Role", role));
+                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role));
             }
             return claims;
         }

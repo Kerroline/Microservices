@@ -1,23 +1,41 @@
 version: "3.8"
 
 services:
-  pgdb:
+  pgdb_auth:
     container_name: msauthpgdb_compose
     image: kerroline/msauthpgdb
     restart: always
     networks:
       - msauthbridge
+  pgdb_posts:
+    container_name: mspostspgdb_compose
+    image: kerroline/mspostspgdb
+    restart: always
+    networks:
+      - mspostsbridge
   authserver:
     container_name: msauthapp_compose
     image: kerroline/msauthapp
     ports:
-      - '9999:80'
+      - '8081:80'
     restart: always
     depends_on:
-      - pgdb
+      - pgdb_auth
     networks:
       - msauthbridge
+  postsserver:
+    container_name: mspostsapp_compose
+    image: kerroline/mspostsapp
+    ports:
+      - '8082:80'
+    restart: always
+    depends_on:
+      - pgdb_posts
+    networks:
+      - mspostsbridge
 
 networks:
   msauthbridge:
+    driver: bridge
+  mspostsbridge:
     driver: bridge

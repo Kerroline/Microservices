@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 
 namespace MS_Posts.Controllers
 {
-    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class PostsController : ControllerBase
@@ -22,13 +21,21 @@ namespace MS_Posts.Controllers
             this._postService = postService;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var postList = await _postService.GetAllAsync();
             return Ok(postList);
         }
-
+        [AllowAnonymous]
+        [HttpGet("getbyuser/{id}")]
+        public async Task<IActionResult> GetAllByUser(string userId)
+        {
+            var postList = await _postService.GetAllByUser(userId);
+            return Ok(postList);
+        }
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -39,7 +46,7 @@ namespace MS_Posts.Controllers
             }
             return BadRequest(new { message = "post not found" });
         }
-
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Create(PostModel post)
         {
@@ -50,7 +57,7 @@ namespace MS_Posts.Controllers
             }
             return BadRequest(new { message = "Model invalid" });
         }
-
+        [AllowAnonymous]
         [HttpPut]
         public async Task<IActionResult> Edit(PostModel post)
         {
@@ -61,7 +68,7 @@ namespace MS_Posts.Controllers
             }
             return BadRequest(new { message = "post not found" });
         }
-
+        [AllowAnonymous]
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {

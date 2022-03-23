@@ -10,12 +10,10 @@ namespace MSAuth.Services
 {
     public interface IUserService
     {
-        Task<IEnumerable<CustomUserModel>> GetAllAsync();
+        Task<IEnumerable<UserWithRoles>> GetAllAsync();
         Task<UserWithRoles> GetByIdAsync(string id);
-        Task<CustomUserModel> CreateAsync(CustomUserModel user);
-        Task<CustomUserModel> EditAsync(string id);
-        Task<bool> DeleteAsync(string id);
-
+        Task<CustomUserModel> FindUserAsync(string username, string email);
+        Task<CustomUserModel> CreateAsync(CreateCustomUserRequest user);
     }
     public class UserService : IUserService
     {
@@ -31,9 +29,20 @@ namespace MSAuth.Services
             _userManager = userManager;
         }
 
-        public async Task<IEnumerable<CustomUserModel>> GetAllAsync()
+        public async Task<IEnumerable<UserWithRoles>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            List<UserWithRoles> userRolesList = new();
+
+            var users = _userManager.Users.ToList();
+
+            foreach (var user in users)
+            {
+                var userRoles = await GetUserRolesAsync(user);
+                userRolesList.Add(new UserWithRoles(user, userRoles));
+            }
+
+
+            return userRolesList;
         }
 
         public async Task<UserWithRoles> GetByIdAsync(string id)
@@ -48,20 +57,33 @@ namespace MSAuth.Services
             return null;
         }
 
-        public async Task<CustomUserModel> CreateAsync(CustomUserModel user)
+        public async Task<CustomUserModel> FindUserAsync(string username, string email)
         {
-            throw new NotImplementedException();
+            var candidate = await _userManager.FindByNameAsync(username) ??
+                            await _userManager.FindByEmailAsync(email);
+            return candidate;
         }
 
-        public async Task<bool> DeleteAsync(string id)
+        public async Task<CustomUserModel> CreateAsync(CreateCustomUserRequest userRequest)
         {
-            throw new NotImplementedException();
+            var candidate = await _userManager.FindByNameAsync(userRequest.Username) ??
+                            await _userManager.FindByEmailAsync(userRequest.Email);
+
+            if(candidate is null)
+            {
+                var newUser = new CustomUserModel
+                {
+
+                    UserName = userRequest.Username,
+                    Email = userRequest.Email,
+
+                };
+                await _userManager.CreateAsync(newUser, userRequest.Password);
+                return newUser;
+            }
+            return null;
         }
 
-        public async Task<CustomUserModel> EditAsync(string id)
-        {
-            throw new NotImplementedException();
-        }
 
         private async Task<IEnumerable<string>> GetUserRolesAsync(CustomUserModel user)
         {

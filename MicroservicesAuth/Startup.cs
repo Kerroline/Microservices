@@ -42,7 +42,7 @@ namespace MicroservicesAuth
 
             services.AddDbContext<MSAuthContext>(options => options.UseNpgsql(_configuration.GetConnectionString("AuthUserPGDBlocal")));
             //services.AddDbContext<MSAuthContext>(options => options.UseNpgsql(_configuration.GetConnectionString("AuthUserPGDBdocker")));
-            //services.AddDbContext<MSAuthContext>(options => options.UseNpgsql(_configuration.GetConnectionString("AuthUserPGDBcompose")));
+           // services.AddDbContext<MSAuthContext>(options => options.UseNpgsql(_configuration.GetConnectionString("AuthUserPGDBcompose")));
 
             services.AddDefaultIdentity<CustomUserModel>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<IdentityRole>()
               .AddEntityFrameworkStores<MSAuthContext>();

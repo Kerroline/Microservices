@@ -11,6 +11,7 @@ namespace MS_Posts.Services
     public interface IPostService
     {
         Task<IEnumerable<PostModel>> GetAllAsync();
+        Task<IEnumerable<PostModel>> GetAllByUser(string userId);
         Task<PostModel> GetByIdAsync(int id);
         Task<PostModel> CreateAsync(PostModel post);
         Task<bool> EditAsync(PostModel post);
@@ -27,6 +28,10 @@ namespace MS_Posts.Services
         public async Task<IEnumerable<PostModel>> GetAllAsync()
         {
             return await _postContext.Posts.ToListAsync();
+        }
+        public async Task<IEnumerable<PostModel>> GetAllByUser(string userId)
+        {
+            return await _postContext.Posts.Where(p => p.UserId == userId).ToListAsync();
         }
 
         public async Task<PostModel> GetByIdAsync(int id)

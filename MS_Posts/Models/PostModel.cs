@@ -18,5 +18,8 @@ namespace MS_Posts.Models
         [Required]
         public string Body { get; set; }
 
+        [Required]
+        public string UserId { get; set; }
+
     }
 }
